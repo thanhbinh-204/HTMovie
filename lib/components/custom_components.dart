@@ -175,7 +175,7 @@ class RedirectLink extends StatelessWidget {
           TextSpan(
             text: linkText,
             style: const TextStyle(
-              color: Colors.white,
+              color: Color(0xFF9D50FF),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -184,4 +184,51 @@ class RedirectLink extends StatelessWidget {
     ),
   );
 }
+}
+
+
+class CustomFoget extends StatelessWidget {
+  final String titleForget;
+  final String subtitleForget;
+  const CustomFoget({super.key, required this.titleForget, required this.subtitleForget});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 90, height: 90,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF9D50FF), Color(0xFF6E48FF)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF9D50FF).withOpacity(0.5),
+                blurRadius: 20, offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Image.asset("assets/images/forget.png", color: Colors.white, fit: BoxFit.contain),
+        ),
+        const SizedBox(height: 16),
+        Text(titleForget, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white)),
+        if (subtitleForget != null) ...[
+          SizedBox(height: 8,),
+          Text(
+            subtitleForget!,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white54,
+              fontSize: 10,
+              height: 1.5
+            ),
+          )
+        ],
+        const SizedBox(height: 24),
+      ],
+    );
+  }
 }

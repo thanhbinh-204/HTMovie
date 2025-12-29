@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Register_page.dart';
 import '../components/custom_components.dart';
+import '../password/forgot_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -73,7 +74,12 @@ class _LoginPage extends State<LoginPage> {
                             alignment: Alignment.centerRight,
                             child: 
                               TextButton(
-                                onPressed: (){},
+                                onPressed: (){
+                                  Navigator.push(
+                                    context,
+                                     MaterialPageRoute(builder: (context) => ForgotPage())
+                                     );
+                                },
                                child: Text("Forgot Password?",
                                style: TextStyle(
                                 color: Color(0xFF9D50FF),
