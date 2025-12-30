@@ -1,71 +1,75 @@
 import 'package:flutter/material.dart';
+import '../models/category_model.dart';
+import '../services/category_service.dart';
 
-class CategorySection extends StatelessWidget {
+class CategorySection extends StatefulWidget {
   const CategorySection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final bool isTablet = size.width >= 600;
-    final bool isSmallPhone = size.height < 700;
+  State<CategorySection> createState() => _CategorySectionState();
+}
 
-    // category
-    final List<String> categories = [
-      'All',
-      'Movie',
-      'Live Aciton',
-      'Khoa Học',
-      'Anime',
-      'Kinh Dị',
-      'Phiêu Lưu',
-      'Tình Cảm',
-      'Dài Tập',
-      'Sci-Fi',
-      'Comedy',
-      'TV Shows',
-      'Top Rated',
-    ];
+class _CategorySectionState extends State<CategorySection> {
+  final CategoryService _service = CategoryService();
+
+  List<CategoryModel> categories = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('INIT CATEGORY SECTION');
+    fetchCategories();
+  }
+
+  Future<void> fetchCategories() async {
+    try {
+      final data = await _service.getCategories();
+
+      setState(() {
+        categories = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const SizedBox(
+        height: 40,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return SizedBox(
-      height: isTablet ? 48 : isSmallPhone ? 34 : 40,
-      child: ListView.separated(
+      height: 40,
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10,),
         itemBuilder: (context, index) {
-          final bool isActive = index == 0;
+          final category = categories[index];
 
           return Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 20 : isSmallPhone ? 12 : 16,
-              // thêm vertical sẽ bị đẩy text
-            ),
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: isActive ? const Color.fromARGB(255, 169, 79, 187) : Colors.transparent, 
-              border: Border.all(
-                color: isActive ? Colors.transparent : Colors.white.withOpacity(0.4),
-                width: 1,
-              ),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white24),
             ),
-            child: Center(
-              child: Text(
-                categories[index],
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isTablet ? 14 : isSmallPhone ? 10 : 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+            alignment: Alignment.center,
+            child: Text(
+              category.name,
+              style: const TextStyle(color: Colors.white),
             ),
           );
-          
         },
-        ),
+      ),
     );
   }
 }
