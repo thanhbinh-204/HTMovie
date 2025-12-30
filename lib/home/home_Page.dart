@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ht_movie/items/category_section.dart';
 import '../items/hero_banner.dart';
+import '../items/continueWatching.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -12,7 +13,6 @@ class _HomePage extends State<HomePage> {
 
   
   // dữ liệu film test all home page
-  
   // film
   final List<Map<String, dynamic>> film = [
     {
@@ -44,29 +44,7 @@ class _HomePage extends State<HomePage> {
       'year': '2014',
     },
   ];
-  //continue watching
-  final List<Map<String, dynamic>> ctnWatching = [
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/47/da/2d/47da2d09a9bb2394dd764adc789ab193.jpg',
-      'time' : '1h34m remaining',
-    },
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/b1/ac/5b/b1ac5b489ce5b989680b6ca81a49e180.jpg',
-      'time' : '1h34m remaining',
-    },
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/ca/49/1d/ca491d45d50bbf2b1d05a5c7432ad817.jpg',
-      'time' : '1h34m remaining',
-    },
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/b2/a5/1e/b2a51ed349764f3536e7ac57130fc521.jpg',
-      'time' : '1h34m remaining',
-    },
-  ];
+  
 
   @override
   Widget build(BuildContext context) {
@@ -81,20 +59,25 @@ class _HomePage extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            // hero banner film
             const HeroBanner(),
+
             SizedBox(height: 16,),
+
+            // categopry film
             CategorySection(),
+
             SizedBox(height: 16,),
+
+            // header continue watching and see all
             Row(
-              
               children: [
                 Padding(padding: EdgeInsets.only(left: isTablet ? 20 : 16)),
                 Text(
                   "Continue Watching", 
                   style: TextStyle(color: Colors.white),
-                  
                   ),
-                
                 Padding(padding: EdgeInsets.only(left: isTablet ? 20 : 65),
                 child: Text(
                   "See All",
@@ -103,6 +86,11 @@ class _HomePage extends State<HomePage> {
                 ),
               ],
             ),
+
+          SizedBox(height: 10,),
+
+          //continue watching
+          Continuewatching(),
           ],
         ),
       ),
