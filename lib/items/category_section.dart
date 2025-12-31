@@ -51,6 +51,7 @@ class _CategorySectionState extends State<CategorySection> {
       height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.only(left: 16),
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
