@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Register_page.dart';
-import '../components/custom_components.dart';
+import '../../widget/components/custom_components.dart';
 import '../password/forgot_page.dart';
 
 class LoginPage extends StatefulWidget {

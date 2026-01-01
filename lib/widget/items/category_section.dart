@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/category_model.dart';
-import '../services/category_service.dart';
+import '../../call_api/models/category_model.dart';
+import '../../call_api/services/category_service.dart';
 
 class CategorySection extends StatefulWidget {
   const CategorySection({super.key});

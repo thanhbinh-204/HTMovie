@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:ht_movie/home/home_Page.dart';
-import '../navbar_page/search_page.dart';
-import '../navbar_page/library_page.dart';
-import '../navbar_page/profile_page.dart';
+import 'package:ht_movie/page/home/home_Page.dart';
+import 'search_page.dart';
+import 'library_page.dart';
+import 'profile_page.dart';
 
 class Navbar extends StatefulWidget {
   @override

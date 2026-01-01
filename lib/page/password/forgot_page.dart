@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ht_movie/regis_login_page/Login_page.dart';
-import 'package:ht_movie/components/custom_components.dart';
+import 'package:ht_movie/page/regis_login_page/Login_page.dart';
+import 'package:ht_movie/widget/components/custom_components.dart';
 
 class ForgotPage extends StatefulWidget {
   @override

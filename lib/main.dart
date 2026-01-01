@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'regis_login_page/Register_page.dart';
-import 'regis_login_page/Login_page.dart';
-import 'password/forgot_page.dart';
-import 'home/home_Page.dart';
-import 'navbar_page/navbar.dart';
+import 'page/regis_login_page/Register_page.dart';
+import 'page/regis_login_page/Login_page.dart';
+import 'page/password/forgot_page.dart';
+import 'page/home/home_Page.dart';
+import 'page/navbar_page/navbar.dart';
 void main() {
   runApp(const MyApp());
 }

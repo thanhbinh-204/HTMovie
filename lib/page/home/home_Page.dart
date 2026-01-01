@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ht_movie/items/category_section.dart';
-import '../items/hero_banner.dart';
-import '../items/continueWatching.dart';
-import '../items/trendingNow.dart';
+import 'package:ht_movie/widget/items/category_section.dart';
+import '../../widget/items/hero_banner.dart';
+import '../../widget/items/continueWatching.dart';
+import '../../widget/items/trendingNow.dart';
 
 class HomePage extends StatefulWidget {
   @override
