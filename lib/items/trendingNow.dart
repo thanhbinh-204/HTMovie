@@ -26,7 +26,7 @@ class Trendingnow extends StatelessWidget {
         'image':
             'https://i.pinimg.com/736x/64/59/81/645981a04bd9f5d661ce7c540c6eef64.jpg',
         'rate': '4,1',
-        'year': '2018',
+        'year': 'The Wave',
       },
       {
         'name': 'Train To BuSan',

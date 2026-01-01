@@ -18,7 +18,6 @@ class _CategorySectionState extends State<CategorySection> {
   @override
   void initState() {
     super.initState();
-    debugPrint('INIT CATEGORY SECTION');
     fetchCategories();
   }
 

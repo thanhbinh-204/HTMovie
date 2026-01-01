@@ -11,7 +11,7 @@ class ApiClient {
     final response = await http.get(url);
 
     debugPrint('STATUS CODE: ${response.statusCode}');
-    debugPrint('BODY: ${response.body}');
+    
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);

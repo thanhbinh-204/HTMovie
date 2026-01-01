@@ -29,7 +29,7 @@ class _SearchPage extends State<SearchPage> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 50, left: 10, right: 10),
+            padding: EdgeInsets.only(left: 10, right: 10, top: MediaQuery.of(context).padding.top + 12),
             child: TextFormField(
               controller: _searchPage,
               onChanged: _onSearchChanged,
@@ -45,7 +45,7 @@ class _SearchPage extends State<SearchPage> {
                 filled: true,
                 fillColor: Colors.transparent,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(isTablet ? 28 : 20),
                   borderSide: BorderSide(color: Colors.white10, width: 1.2),
                 ),
               ),
@@ -57,3 +57,6 @@ class _SearchPage extends State<SearchPage> {
     );
   }
 }
+
+// chưa có state lưu kết quả tìm
+// cần thêm expaned để hiển thị kết quả tìm kiếm chống overflow
