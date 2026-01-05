@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ht_movie/widget/items/category_section.dart';
-import '../../widget/items/hero_banner.dart';
-import '../../widget/items/continueWatching.dart';
-import '../../widget/items/trendingNow.dart';
+import 'package:ht_movie/widget/items/items_home/category_section.dart';
+import '../../widget/items/items_home/hero_banner.dart';
+import '../../widget/items/items_home/continueWatching.dart';
+import '../../widget/items/items_home/trendingNow.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -41,8 +41,9 @@ class _HomePage extends State<HomePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const Spacer(),
                   Padding(
-                    padding: EdgeInsets.only(left: isTablet ? 20 : 65),
+                    padding: EdgeInsets.only(right: isTablet ? 20 : 16),
                     child: Text(
                       "See All",
                       style: TextStyle(
@@ -68,8 +69,9 @@ class _HomePage extends State<HomePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const Spacer(),
                   Container(
-                    padding: EdgeInsets.only(left: isTablet ? 20 : 90),
+                    padding: EdgeInsets.only(right: isTablet ? 10 : 5),
                     child: IconButton(
                       onPressed: () {},
                       icon: Icon(Icons.arrow_left),
@@ -86,6 +88,7 @@ class _HomePage extends State<HomePage> {
                     ),
                   ),
                   Container(
+                    padding: EdgeInsets.only(right: isTablet ? 20 : 16),
                     child: IconButton(
                       onPressed: () {},
                       icon: Icon(Icons.arrow_right),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widget/components/library_segmented_button.dart';
-import '../../widget/items/savemovie_library.dart';
-import '../../widget/items/continue_library.dart';
+import '../../widget/items/items_library/savemovie_library.dart';
+import '../../widget/items/items_library/continue_library.dart';
 
 class LibraryPage extends StatelessWidget {
   const LibraryPage({super.key});
