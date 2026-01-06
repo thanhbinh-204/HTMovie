@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ht_movie/page/home/home_Page.dart';
 import 'Register_page.dart';
 import '../../widget/components/custom_components.dart';
 import '../password/forgot_page.dart';
+import '../../call_api/services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -14,6 +16,7 @@ class _LoginPage extends State<LoginPage> {
   final _passwordLoginVLD = TextEditingController();
 
   bool _isObscure = true;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,11 @@ class _LoginPage extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CustomLogo(title: "Welcome Back",subtitle: "Please sign in to your HTMovie account to\ncontinue watching.",),
+                  CustomLogo(
+                    title: "Welcome Back",
+                    subtitle:
+                        "Please sign in to your HTMovie account to\ncontinue watching.",
+                  ),
                   Container(
                     padding: EdgeInsets.all(isSmallPhone ? 20 : 32),
                     decoration: BoxDecoration(
@@ -51,6 +58,20 @@ class _LoginPage extends State<LoginPage> {
                             labelText: "Email or Username",
                             hintText: "name@example.com",
                             icon: Icons.email_outlined,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Email or Username cannot be empty";
+                              }
+                              if (value.contains('@')) {
+                                final emailRegex = RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                );
+                                if (!emailRegex.hasMatch(value)) {
+                                  return "Invalid email format";
+                                }
+                              }
+                              return null;
+                            },
                           ),
                           SizedBox(height: isSmallPhone ? 15 : 20),
 
@@ -62,52 +83,92 @@ class _LoginPage extends State<LoginPage> {
                             hintText: "Enter your password",
                             icon: Icons.lock_outline,
                             isPassword: true,
-                            isObscured : _isObscure,
+                            isObscured: _isObscure,
                             onToggle: () {
                               setState(() {
                                 _isObscure = !_isObscure;
                               });
                             },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Password cannot be empty";
+                              }
+                              if (value.length < 8) {
+                                return "Password must be at least 8 characters";
+                              }
+                              return null;
+                            },
                           ),
 
                           Align(
                             alignment: Alignment.centerRight,
-                            child: 
-                              TextButton(
-                                onPressed: (){
-                                  Navigator.push(
-                                    context,
-                                     MaterialPageRoute(builder: (context) => ForgotPage())
-                                     );
-                                },
-                               child: Text("Forgot Password?",
-                               style: TextStyle(
-                                color: Color(0xFF9D50FF),
-                                fontWeight: FontWeight.w500,
-                               ),)
-                               ), 
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ForgotPage(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  color: Color(0xFF9D50FF),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
                           ),
 
-                          SizedBox(height: 32,),
+                          SizedBox(height: 32),
                           CustomButton(
                             text: "Login",
-                           onPressed: (){}
-                           ),
+                            onPressed: () async {
+                              if (_formkey.currentState!.validate()) {
+                                setState(() => _isLoading = true);
+
+                                try {
+                                  final reponse = await AuthService.login(
+                                    email: _emailLoginVLD.text.trim(), 
+                                    password: _passwordLoginVLD.text,
+                                    );
+                                    print("Login Success: $reponse");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text("Login Success")),
+                                    );
+                                    Navigator.pushReplacement(context, 
+                                    MaterialPageRoute(builder: (_) => HomePage()),
+                                    );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Email or password is incorrect",
+                                      ),
+                                    ),
+                                  );
+                                } finally {
+                                  setState(() => _isLoading = false);
+                                }
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  SizedBox(height: 24,),
+                  SizedBox(height: 24),
                   RedirectLink(
                     leadingText: "New to HTMovie?",
-                   linkText: "Create an Account",
-                    onTap: (){
+                    linkText: "Create an Account",
+                    onTap: () {
                       Navigator.push(
                         context,
-                         MaterialPageRoute(builder: (context) => RegisterPage()),
-                         );
-                    }
-                    )
+                        MaterialPageRoute(builder: (context) => RegisterPage()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

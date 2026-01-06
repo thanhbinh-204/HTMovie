@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Login_page.dart';
+import '../../call_api/services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -40,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20,),
+                  SizedBox(height: 20),
                   _buildLogo(size),
                   Container(
                     padding: EdgeInsets.all(isSmallPhone ? 20 : 32),
@@ -60,6 +61,18 @@ class _RegisterPageState extends State<RegisterPage> {
                             controller: _emailVLD,
                             hintText: "name@example.com",
                             icon: Icons.email_outlined,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Email cannot be empty";
+                              }
+                              final emailRegex = RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              );
+                              if (!emailRegex.hasMatch(value)) {
+                                return "Invalid email format";
+                              }
+                              return null;
+                            },
                           ),
                           SizedBox(height: isSmallPhone ? 15 : 20),
 
@@ -70,9 +83,20 @@ class _RegisterPageState extends State<RegisterPage> {
                             hintText: "Enter your password",
                             icon: Icons.lock_outline,
                             isPassword: true,
-                            isObscured : _obscurePassword,
+                            isObscured: _obscurePassword,
                             onToggle: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
+                              setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              );
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Password cannot be empty";
+                              }
+                              if (value.length < 8) {
+                                return "Password must be at least 8 characters";
+                              }
+                              return null;
                             },
                           ),
                           SizedBox(height: isSmallPhone ? 15 : 20),
@@ -84,9 +108,22 @@ class _RegisterPageState extends State<RegisterPage> {
                             hintText: "Enter your repeat password",
                             icon: Icons.lock_outline,
                             isPassword: true,
-                            isObscured : _obscurePassword,
+                            isObscured: _obscureRepeatPassword,
                             onToggle: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
+                              setState(
+                                () =>
+                                    _obscureRepeatPassword =
+                                        !_obscureRepeatPassword,
+                              );
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Pleas confirm your password";
+                              }
+                              if (value != _passwordVLD.text) {
+                                return "Password do not match";
+                              }
+                              return null;
                             },
                           ),
                           SizedBox(height: 24),
@@ -108,7 +145,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildLogo (Size size) {
+  Widget _buildLogo(Size size) {
     return Column(
       children: [
         Container(
@@ -121,30 +158,31 @@ class _RegisterPageState extends State<RegisterPage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [Color(0xFF9D50FF), Color(0xFF6E48FF)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xFF9D50FF).withOpacity(0.5),
+                blurRadius: 20,
+                offset: Offset(0, 10),
               ),
-              boxShadow : [
-                BoxShadow(
-                  color: Color(0xFF9D50FF).withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
+            ],
           ),
           child: Image.asset(
             "assets/images/logo.png",
             color: Colors.white,
             fit: BoxFit.contain,
-            ),
+          ),
         ),
-        SizedBox(height: 16,),
-        Text("Register",
-        style: TextStyle(
-          fontSize: 25,
-          fontWeight: FontWeight.bold,
-          color: Colors.white
+        SizedBox(height: 16),
+        Text(
+          "Register",
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-        ),
-        SizedBox(height: 24,),
+        SizedBox(height: 24),
       ],
     );
   }
@@ -165,21 +203,26 @@ class _RegisterPageState extends State<RegisterPage> {
     required String hintText,
     required IconData icon,
     bool isPassword = false,
-    bool isObscured = false,  //biến trạng thái mới
-    VoidCallback? onToggle,   // xử lý click ẩn hiện pass
+    bool isObscured = false, //biến trạng thái mới
+    VoidCallback? onToggle, // xử lý click ẩn hiện pass
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword ? isObscured : false,
       style: TextStyle(color: Colors.white),
+      validator: validator,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
         prefixIcon: Icon(icon, color: Colors.white38, size: 20),
-        suffixIcon: isPassword
+        suffixIcon:
+            isPassword
                 ? IconButton(
                   icon: Icon(
-                    isObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    isObscured
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
                     color: Colors.white38,
                     size: 20,
                   ),
@@ -240,7 +283,33 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () async {
+          if (_formkey.currentState!.validate()) {
+            setState(() => _isLoading = true);
+
+            try {
+              await AuthService.register(
+                email: _emailVLD.text.trim(),
+                password: _passwordVLD.text,
+              );
+
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("Register Success")));
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => LoginPage()),
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("Register Failed")));
+            } finally {
+              setState(() => _isLoading = false);
+            }
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -281,10 +350,7 @@ class _RegisterPageState extends State<RegisterPage> {
           },
           child: Text(
             "Login",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ],
