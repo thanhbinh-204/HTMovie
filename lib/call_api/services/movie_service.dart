@@ -5,6 +5,7 @@ import '../models/movie_model.dart';
 class MovieService {
   static const String baseUrl = "https://movie-server-mlom.onrender.com";
 
+  //get all movie
   static Future<List<MovieModel>> getAllMovies() async {
     final url = Uri.parse("$baseUrl/movies");
     final reponse = await http.get(url);
@@ -19,5 +20,22 @@ class MovieService {
       throw Exception("Failed to load movies");
     }
   }
-}
 
+  //search by title
+  static Future<List<MovieModel>> searchMovieByTitle(String title) async {
+    final encodedTitle = Uri.encodeQueryComponent(title);
+    final url = Uri.parse("$baseUrl/keywords/movies/$encodedTitle");
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> json = jsonDecode(response.body);
+
+      final List list = json['results'];
+
+      return list.map((e) => MovieModel.fromJson(e['movies'])).toList();
+    } else {
+      throw Exception("Search movie failed");
+    }
+  }
+}
