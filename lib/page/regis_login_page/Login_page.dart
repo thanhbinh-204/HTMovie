@@ -4,6 +4,7 @@ import 'Register_page.dart';
 import '../../widget/components/custom_components.dart';
 import '../password/forgot_page.dart';
 import '../../call_api/services/auth_service.dart';
+import '../navbar_page/navbar.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -133,12 +134,12 @@ class _LoginPage extends State<LoginPage> {
                                     email: _emailLoginVLD.text.trim(), 
                                     password: _passwordLoginVLD.text,
                                     );
-                                    print("Login Success: $reponse");
+                                    print("Login Success");
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(content: Text("Login Success")),
                                     );
                                     Navigator.pushReplacement(context, 
-                                    MaterialPageRoute(builder: (_) => HomePage()),
+                                    MaterialPageRoute(builder: (_) => Navbar()),
                                     );
                                 } catch (e) {
                                   ScaffoldMessenger.of(context).showSnackBar(

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../api/../authstorage.dart';
 
 class AuthService {
   static const String baseUrl = "https://movie-server-mlom.onrender.com";
@@ -32,7 +34,7 @@ class AuthService {
   }
 
   // auth login
-  static Future<Map<String, dynamic>> login({
+  static Future<void> login({
     required String email,
     required String password,
   }) async {
@@ -48,7 +50,18 @@ class AuthService {
     );
 
     if (reponse.statusCode == 200) {
-      return jsonDecode(reponse.body);
+      final data = jsonDecode(reponse.body);
+
+    // save token nhớ đăng nhập
+   await Authstorage.saveLoginData(
+      accessToken: data['accessToken'],
+      refreshToken: data['refreshToken'],
+      userId: data['user']['id'],
+      email: data['user']['email'],
+    );
+
+    debugPrint('LOGIN SUCCESS + TOKEN SAVED');
+
     }else {
       throw Exception(reponse.body);
     }

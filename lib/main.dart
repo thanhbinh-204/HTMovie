@@ -4,6 +4,7 @@ import 'page/regis_login_page/Login_page.dart';
 import 'page/password/forgot_page.dart';
 import 'page/home/home_Page.dart';
 import 'page/navbar_page/navbar.dart';
+import 'page/splash/splash_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
 
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home:  Navbar() ,
+      home:  SplashScreen() ,
     );
   }
 }
