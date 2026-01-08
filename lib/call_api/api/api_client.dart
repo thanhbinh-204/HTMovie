@@ -4,37 +4,12 @@ import 'package:http/http.dart' as http;
 import 'api_endpoints.dart';
 import '../authstorage.dart';
 
-// class ApiClient {
-//   Future<dynamic> get(String endpoints) async {
-//     final url = Uri.parse(ApiEndpoints.baseUrl + endpoints);
-//     debugPrint('call api: $url');
-
-//     final response = await http.get(url);
-
-//     debugPrint('STATUS CODE: ${response.statusCode}');
-    
-
-//     if (response.statusCode == 200) {
-//       return jsonDecode(response.body);
-//     } else {
-//       throw Exception('API error ${response.statusCode}');
-//     }
-//   }
-// }
-
 class ApiClient {
-
-  /// GET API (có/không token)
-  Future<dynamic> get(
-    String endpoint, {
-    bool requireAuth = false,
-  }) async {
+  Future<dynamic> get(String endpoint, {bool requireAuth = false}) async {
     final url = Uri.parse(ApiEndpoints.baseUrl + endpoint);
     debugPrint('CALL API: $url');
 
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
+    final headers = <String, String>{'Content-Type': 'application/json'};
 
     if (requireAuth) {
       final token = await Authstorage.getAccessToken();
@@ -59,5 +34,4 @@ class ApiClient {
   }
 }
 
-/// Custom Exception
 class UnauthenticatedException implements Exception {}

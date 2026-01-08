@@ -15,19 +15,13 @@ class AuthService {
 
     final reponse = await http.post(
       url,
-      headers: {
-        "Content-Type" : "application/json",
-      },
-      body: jsonEncode({
-        'email' : email,
-        'password' : password,
-        }),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({'email': email, 'password': password}),
     );
 
     if (reponse.statusCode == 200 || reponse.statusCode == 201) {
       print("Register Success: ${reponse.body}");
-    }
-    else {
+    } else {
       print("Register failed: ${reponse.body}");
       throw Exception("Register failed");
     }
@@ -42,28 +36,28 @@ class AuthService {
 
     final reponse = await http.post(
       url,
-      headers: {"Content-Type" : "application/json"},
-      body: jsonEncode({
-        "email" : email,
-        "password" : password,
-      }),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "password": password}),
     );
 
     if (reponse.statusCode == 200) {
       final data = jsonDecode(reponse.body);
 
-    // save token nhớ đăng nhập
-   await Authstorage.saveLoginData(
-      accessToken: data['accessToken'],
-      refreshToken: data['refreshToken'],
-      userId: data['user']['id'],
-      email: data['user']['email'],
-    );
+      // save token nhớ đăng nhập
+      await Authstorage.saveLoginData(
+        accessToken: data['accessToken'],
+        refreshToken: data['refreshToken'],
+        userId: data['user']['id'],
+        email: data['user']['email'],
+      );
 
-    debugPrint('LOGIN SUCCESS + TOKEN SAVED');
-
-    }else {
+      debugPrint('LOGIN SUCCESS + TOKEN SAVED');
+    } else {
       throw Exception(reponse.body);
     }
+  }
+
+  static Future<String?> getAccessToken() async {
+    return await Authstorage.getAccessToken();
   }
 }

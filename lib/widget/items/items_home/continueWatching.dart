@@ -1,50 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:ht_movie/call_api/models/watch_history_model.dart';
+import 'package:ht_movie/call_api/services/watch_history_service.dart';
+import '../../../call_api/services/auth_service.dart';
 
-class Continuewatching extends StatelessWidget {
-  const Continuewatching ({super.key});
+class Continuewatching extends StatefulWidget {
+  const Continuewatching({super.key});
+
+  @override
+  State<Continuewatching> createState() => _ContinuewatchingState();
+}
+
+class _ContinuewatchingState extends State<Continuewatching> {
+  List<WatchHistoryModel> watchHistory = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWatchHistory();
+  }
+
+  Future<void> fetchWatchHistory() async {
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) {
+        setState(() => isLoading = false);
+        return;
+      }
+      final result = await WatchHistoryService.getWatchHistory(token: token);
+      setState(() {
+        watchHistory = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-
-    //continue watching
-  final List<Map<String, dynamic>> ctnWatching = [
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/47/da/2d/47da2d09a9bb2394dd764adc789ab193.jpg',
-      'time' : '1h34m remaining',
-    },
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/b1/ac/5b/b1ac5b489ce5b989680b6ca81a49e180.jpg',
-      'time' : '1h34m remaining',
-    },
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/ca/49/1d/ca491d45d50bbf2b1d05a5c7432ad817.jpg',
-      'time' : '1h34m remaining',
-    },
-    {
-      'name' : 'Dune:Part One',
-      'image': 'https://i.pinimg.com/736x/b2/a5/1e/b2a51ed349764f3536e7ac57130fc521.jpg',
-      'time' : '1h34m remaining',
-    },
-  ];
-
     final size = MediaQuery.of(context).size;
     final bool isTablet = size.width >= 600;
     final bool isSmallPhone = size.height < 700;
+    final double height = isSmallPhone ? 180 : (isTablet ? 250 : 220);
+
+    if (isLoading) {
+      return SizedBox(
+        height: height,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (watchHistory.isEmpty) {
+      return SizedBox(
+        height: height,
+        child: Center(
+          child: Text(
+            'Chưa xem bộ phim nào',
+            style: TextStyle(color: Colors.white54, fontSize: 14),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
-      height: isSmallPhone ? 180 : (isTablet ? 250 : 220), // chiều cao height 
+      height: isSmallPhone ? 180 : (isTablet ? 250 : 220),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        itemCount: ctnWatching.length,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: watchHistory.length,
         itemBuilder: (context, index) {
-          final item = ctnWatching[index];
+          final item = watchHistory[index];
 
           return Container(
-            width: isTablet ? 260 : 225,                      // chiều ngang rộng width 
+            width: isTablet ? 260 : 225,
             margin: const EdgeInsets.only(right: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,40 +82,36 @@ class Continuewatching extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Image.network(
-                      item['image'],
+                      item.movie.posterUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
                     ),
                   ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  item.movie.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
-                  
-                  SizedBox(height: 8,),
-
-                  Text(
-                    item['name'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  item.remainingText,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.6),
                   ),
-
-                  SizedBox(height: 8,),
-
-                  Text(
-                    item['time'],
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.6),
-                    ),
-                  )
+                ),
               ],
             ),
           );
-        }
-        ),
+        },
+      ),
     );
   }
 }
