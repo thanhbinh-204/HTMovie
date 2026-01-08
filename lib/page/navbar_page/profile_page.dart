@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ht_movie/page/regis_login_page/Login_page.dart';
 import '../../widget/items/items_user/account_detail_user.dart';
 import '../../widget/items/items_user/security_user.dart';
 import '../../widget/components/imagepicker_user.dart';
+import '../../widget/components/custom_components.dart';
+import '../../call_api/services/authstorage.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -56,6 +59,20 @@ class _ProfilePage extends State<ProfilePage> {
               SizedBox(height: 20),
 
               const SecurityUser(),
+
+              SizedBox(height: 30),
+              CustomButton(
+                text: "Log out",
+                onPressed: () async {
+                  await Authstorage.logout();
+                  if (!context.mounted) return;
+
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => LoginPage()),
+                    (route) => false,
+                  );
+                },
+              ),
 
               SizedBox(height: 80),
             ],

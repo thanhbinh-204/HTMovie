@@ -7,7 +7,7 @@ class Authstorage {
   static const _userIdKey = 'userId';
   static const _emailKey = 'email';
 
-  //save token 
+  //save token
   static Future<void> saveLoginData({
     required String accessToken,
     required String refreshToken,
@@ -22,7 +22,7 @@ class Authstorage {
     debugPrint('token save');
   }
 
-    static Future<String?> getUserId() async {
+  static Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userIdKey);
   }
@@ -32,7 +32,19 @@ class Authstorage {
     return prefs.getString(_emailKey);
   }
 
-  //read token
+  //save access token khi refresh
+  static Future<void> saveAccessToken(String accessToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_accessTokenKey, accessToken);
+  }
+
+  //refresh token
+  static Future<String?> getRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_refreshTokenKey);
+  }
+
+  //access token
   static Future<String?> getAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_accessTokenKey);

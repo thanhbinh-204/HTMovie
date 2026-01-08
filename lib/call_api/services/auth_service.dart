@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../api/../authstorage.dart';
+import 'authstorage.dart';
 
 class AuthService {
   static const String baseUrl = "https://movie-server-mlom.onrender.com";
@@ -57,7 +57,35 @@ class AuthService {
     }
   }
 
+  static Future<void> logout() async {
+    await Authstorage.logout();
+  }
+
   static Future<String?> getAccessToken() async {
     return await Authstorage.getAccessToken();
+  }
+
+  // refresh token
+  static Future<String?> refreshToken() async {
+    final refreshToken = await Authstorage.getRefreshToken();
+    if (refreshToken == null) return null;
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/refresh'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'refreshToken': refreshToken}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final newAccessToken = data['accessToken'];
+
+      await Authstorage.saveAccessToken(newAccessToken);
+      debugPrint('ACCESS TOKEN REFRESHED');
+
+      return newAccessToken;
+    }
+
+    return null;
   }
 }

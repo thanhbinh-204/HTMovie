@@ -1,9 +1,42 @@
 import 'package:flutter/material.dart';
 import 'inforow.dart';
 import 'planbadge.dart';
+import '../../../call_api/models/user_model.dart';
+import '../../../call_api/services/user_service.dart';
 
-class AccountDetailUser extends StatelessWidget {
+class AccountDetailUser extends StatefulWidget {
   const AccountDetailUser({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _AccountDetailUserState();
+}
+
+class _AccountDetailUserState extends State<AccountDetailUser> {
+  UserModel? user;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserProfile();
+  }
+
+  Future<void> fetchUserProfile() async {
+    try {
+      final result = await UserService.getProfile();
+
+      if (!mounted) return;
+
+      setState(() {
+        user = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('FETCH USER ERROR: $e');
+      if (!mounted) return;
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,10 +44,22 @@ class AccountDetailUser extends StatelessWidget {
     final isTablet = size.width >= 600;
     final isSmallPhone = size.height < 700;
 
-    //mock data sau thay bằng api user đăng nhập
-    const username = '@htmovie_fan_99';
-    const memberSince = 'October 2022';
-    const plan = 'Premium 4K';
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (user == null) {
+      return Center(
+        child: Text(
+          'Không có thông tin tài khoản',
+          style: TextStyle(color: Colors.white54),
+        ),
+      );
+    }
+
+    final username = user!.email;
+    final memberSince = '${user!.createdAt.month}/${user!.createdAt.year}';
+    final plan = 'Free';
 
     return Container(
       padding: EdgeInsets.all(isTablet ? 24 : 20),
@@ -63,6 +108,7 @@ class AccountDetailUser extends StatelessWidget {
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 1,
             ),
           ),
 
