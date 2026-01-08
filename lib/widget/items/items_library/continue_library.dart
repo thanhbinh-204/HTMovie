@@ -1,47 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:ht_movie/call_api/models/watch_history_model.dart';
+import 'package:ht_movie/call_api/services/auth_service.dart';
+import 'package:ht_movie/call_api/services/watch_history_service.dart';
 
-class ContinueLibrary extends StatelessWidget {
+class ContinueLibrary extends StatefulWidget {
   const ContinueLibrary({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _ContinueLibraryState();
+}
+
+class _ContinueLibraryState extends State<ContinueLibrary> {
+  List<WatchHistoryModel> watchHistory = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWatchHistory();
+  }
+
+  Future<void> fetchWatchHistory() async {
+    try {
+      final token = await AuthService.getAccessToken();
+
+      if (token == null) {
+        setState(() => isLoading = false);
+        return;
+      }
+
+      final result = await WatchHistoryService.getWatchHistory(token: token);
+
+      setState(() {
+        watchHistory = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isTablet = size.width >= 600;
     final isSmallPhone = size.height < 700;
-    final List<Map<String, dynamic>> historyLibrary = [
-      {
-        'title': 'The Batman',
-        'image':
-            'https://i.pinimg.com/736x/65/df/9f/65df9ff03792802a3fc5f1c416bd63cf.jpg',
-        'time': '1h45 remaining',
-        'progress': 0.6,
-        'watched': false,
-      },
-      {
-        'title': 'Everything Everywhere',
-        'image':
-            'https://i.pinimg.com/736x/9b/7b/e2/9b7be2979f2e5cbf5777d5ed927d663a.jpg',
-        'time': 'Watched 2 days ago',
-        'progress': null,
-        'watched': true,
-      },
-      {
-        'title': 'SEKIRO',
-        'image':
-            'https://i.pinimg.com/474x/e2/29/76/e229763a0b41d53a9fb355953f4040f8.jpg',
-        'time': 'Watched 2 days ago',
-        'progress': 0.3,
-        'watched': false,
-      },
-       {
-        'title': 'HALO',
-        'image':
-            'https://i.pinimg.com/474x/e4/e0/44/e4e0445ce28e747d25f77d661e84d338.jpg',
-        'time': 'Watched 2 days ago',
-        'progress': null,
-        'watched': true,
-      },
-    ];
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (watchHistory.isEmpty) {
+      return Center(
+        child: Text(
+          'Chưa xem bộ phim nào',
+          style: TextStyle(color: Colors.white54, fontSize: 14),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,9 +65,12 @@ class ContinueLibrary extends StatelessWidget {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: historyLibrary.length,
+          itemCount: watchHistory.length,
           itemBuilder: (context, index) {
-            final item = historyLibrary[index];
+            final item = watchHistory[index];
+            final watched = item.remainingSeconds <= 0;
+            final progressValue =
+                watched ? null : item.progress / item.movie.runtime;
             return Container(
               margin: EdgeInsets.symmetric(
                 horizontal: isTablet ? size.width * 0.1 : 20,
@@ -68,7 +87,7 @@ class ContinueLibrary extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: Image.network(
-                      item['image'],
+                      item.movie.posterUrl,
                       width: 80,
                       height: 100,
                       fit: BoxFit.cover,
@@ -80,7 +99,7 @@ class ContinueLibrary extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['title'],
+                          item.movie.title,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -90,22 +109,19 @@ class ContinueLibrary extends StatelessWidget {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          item['time'],
+                          watched ? 'Đã xem' : item.remainingText,
                           style: TextStyle(
-                            color:
-                                item['watched']
-                                    ? Colors.grey
-                                    : Color(0xFFA06AF9),
+                            color: watched ? Colors.grey : Color(0xFFA06AF9),
                             fontSize: 12,
-                            overflow: TextOverflow.ellipsis
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        if (item['progress'] != null)
+                        if (progressValue != null)
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: LinearProgressIndicator(
-                              value: item['progress'],
+                              value: progressValue,
                               backgroundColor: Colors.white12,
                               color: const Color(0xFFA06AF9),
                               minHeight: 4,
@@ -117,7 +133,7 @@ class ContinueLibrary extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child:
-                        item['watched']
+                        watched
                             ? const Icon(
                               Icons.check_circle,
                               color: Colors.greenAccent,
