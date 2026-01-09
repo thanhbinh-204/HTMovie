@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'security_item.dart';
+import '../../../page/navbar_page/editprofile_user_page.dart';
+import '../../../page/navbar_page/change_pass_page.dart';
 
 class SecurityUser extends StatelessWidget {
   const SecurityUser({super.key});
@@ -42,13 +45,30 @@ class SecurityUser extends StatelessWidget {
             ],
           ),
           SizedBox(height: isSmallPhone ? 16 : 20),
-          SecurityItem(icon: Icons.edit, title: 'Edit Profile', onTap: () {
-            print("nhấn edit profile");
-          }),
+          SecurityItem(
+            icon: Icons.edit,
+            title: 'Edit Profile',
+            onTap: () {
+              PersistentNavBarNavigator.pushNewScreen(
+                context,
+                screen: EditprofileUserPage(),
+                withNavBar: false, // không kèm navbar theo khi chuyển trang
+              );
+            },
+          ),
           SizedBox(height: 14),
-          SecurityItem(icon: Icons.lock_outline, title: 'Change Password',onTap: () {
-            print("nhấn change password");
-          },),
+
+          SecurityItem(
+            icon: Icons.lock_outline,
+            title: 'Change Password',
+            onTap: () {
+              PersistentNavBarNavigator.pushNewScreen(
+                context,
+                screen: ChangePassPage(),
+                withNavBar: false, // không kèm navbar theo khi chuyển trang
+              );
+            },
+          ),
         ],
       ),
     );
