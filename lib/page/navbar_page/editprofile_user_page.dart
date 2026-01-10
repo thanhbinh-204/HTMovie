@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ht_movie/call_api/api/usercache.dart';
+import 'package:ht_movie/call_api/services/user_service.dart';
 import '../../widget/components/imagepicker_user.dart';
 
 class EditprofileUserPage extends StatefulWidget {
@@ -9,14 +11,59 @@ class EditprofileUserPage extends StatefulWidget {
 class _EditprofileUserState extends State<EditprofileUserPage> {
   final _formkey = GlobalKey<FormState>();
 
-  final _usernameVLD = TextEditingController();
-  final _emailVLD = TextEditingController();
+  late TextEditingController _usernameVLD;
+  late TextEditingController _emailVLD;
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _usernameVLD = TextEditingController();
+    _emailVLD = TextEditingController();
+
+    final user = UserCache.currentUser;
+    if (user != null) {
+      _usernameVLD.text = user.name ?? '';
+      _emailVLD.text = user.email;
+      isLoading = false;
+    } else {
+      fetchUser();
+    }
+  }
+
+  Future<void> fetchUser() async {
+    try {
+      final user = await UserService.getProfile();
+      UserCache.currentUser = user;
+
+      if (!mounted) return;
+      _usernameVLD.text = user.name ?? '';
+      _emailVLD.text = user.email;
+      setState(() => isLoading = false);
+    } catch (e) {
+      debugPrint('FETCH USER ERROR: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailVLD.dispose();
+    _usernameVLD.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isSmallPhone = size.height < 700;
     final isTablet = size.width >= 600;
+
+    if (isLoading) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       backgroundColor: Color(0xFF191022),
@@ -70,6 +117,15 @@ class _EditprofileUserState extends State<EditprofileUserPage> {
                     controller: _usernameVLD,
                     hintText: "@moviebuff99",
                     icon: Icons.person_2_outlined,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Username cannot be empty";
+                      }
+                      if (value.length < 8) {
+                        return "Username must be at least 8 characters";
+                      }
+                      return null;
+                    },
                   ),
                   SizedBox(height: isSmallPhone ? 15 : 20),
                   _buildLabel("Email Adrress"),
@@ -78,6 +134,8 @@ class _EditprofileUserState extends State<EditprofileUserPage> {
                     controller: _emailVLD,
                     hintText: "alex@example.com",
                     icon: Icons.mail_outline,
+                    validator: null,
+                    readOnly: true, // chỉ hiển thị không cho sửa
                   ),
                   SizedBox(height: isSmallPhone ? 30 : 40),
                   _buildSaveChangesButton(size),
@@ -111,6 +169,7 @@ class _EditprofileUserState extends State<EditprofileUserPage> {
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
+    bool readOnly = false, // chỉ đọc
     bool isPassword = false,
     bool isObscured = false, //biến trạng thái mới
     VoidCallback? onToggle, // xử lý click ẩn hiện pass
@@ -121,6 +180,7 @@ class _EditprofileUserState extends State<EditprofileUserPage> {
       obscureText: isPassword ? isObscured : false,
       style: TextStyle(color: Colors.white),
       validator: validator,
+      readOnly: readOnly,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.white38, fontSize: 14),

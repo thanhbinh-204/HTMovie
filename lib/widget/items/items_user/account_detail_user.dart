@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ht_movie/call_api/api/api_client.dart';
+import 'package:ht_movie/call_api/api/usercache.dart';
+import 'package:ht_movie/page/regis_login_page/Login_page.dart';
 import 'inforow.dart';
 import 'planbadge.dart';
 import '../../../call_api/models/user_model.dart';
@@ -25,18 +28,32 @@ class _AccountDetailUserState extends State<AccountDetailUser> {
     try {
       final result = await UserService.getProfile();
 
+      UserCache.currentUser = result;
+
       if (!mounted) return;
 
       setState(() {
         user = result;
         isLoading = false;
       });
+
+    } on UnauthenticatedException {
+      handleUnauthenticated();
+
     } catch (e) {
       debugPrint('FETCH USER ERROR: $e');
       if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
+
+  void handleUnauthenticated() {
+    UserCache.currentUser = null;
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => LoginPage()),
+      (route) => false,
+    );
+  } // nếu token hết hạn user null thì điều hướng về login
 
   @override
   Widget build(BuildContext context) {
