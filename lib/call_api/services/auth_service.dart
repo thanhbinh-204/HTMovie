@@ -57,6 +57,45 @@ class AuthService {
     }
   }
 
+  // reset password
+  static Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/auth/reset-password?token=$token",
+    );
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type' : 'application/json',
+      },
+      body: jsonEncode({
+        'newPassword' : newPassword,
+      })
+    );
+    if (response.statusCode == 200) {
+      debugPrint("Reset password success: ${response.body}");
+    } else {
+      throw Exception("Reset password failed: ${response.body}");
+    }
+  }
+
+  //forgot password
+  static Future<void> forgotPassword(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password'),
+      headers: {'Content-Type' : 'application/json'},
+      body: jsonEncode({'email' : email}),
+    );
+    if (response.statusCode == 200) {
+      debugPrint("FORGOT PASSWORD EMAIL SEND");
+    } else {
+      throw Exception(response.body);
+    }
+  }
+  
+
   static Future<void> logout() async {
     await Authstorage.logout();
   }

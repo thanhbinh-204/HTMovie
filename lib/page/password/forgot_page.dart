@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ht_movie/page/regis_login_page/Login_page.dart';
 import 'package:ht_movie/widget/components/custom_components.dart';
+import '../../call_api/services/auth_service.dart';
 
 class ForgotPage extends StatefulWidget {
   @override
@@ -51,17 +52,45 @@ class _ForgotPage extends State<ForgotPage> {
                             labelText: "Email Address",
                             hintText: "example@gmail.com",
                             icon: Icons.email_outlined,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Email is required';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Invalid email';
+                              }
+                              return null;
+                            },
                           ),
                           SizedBox(height: isSmallPhone ? 15 : 20),
                           CustomButton(
                             text: "Send Reset Link",
-                            onPressed: () {},
+                            onPressed: () async {
+                              if (!_formkey.currentState!.validate()) return;
+
+                              if (_emailForget.text.isEmpty) {
+                                _showMessage("Please enter your email");
+                                return;
+                              }
+                              try {
+                                await AuthService.forgotPassword(
+                                  _emailForget.text.trim(),
+                                );
+
+                                _showMessage("Reset link send to your email");
+                                Navigator.pop(context);
+                              } catch (e) {
+                                _showMessage(
+                                  "Email not found or something went wrong",
+                                );
+                              }
+                            },
                           ),
                         ],
                       ),
                     ),
                   ),
-                  SizedBox(height: 24,),
+                  SizedBox(height: 24),
                   RedirectLink(
                     leadingText: "Remember your password?",
                     linkText: "Login",
@@ -72,7 +101,7 @@ class _ForgotPage extends State<ForgotPage> {
                       );
                     },
                   ),
-                  SizedBox(height: 100,),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -80,5 +109,11 @@ class _ForgotPage extends State<ForgotPage> {
         ),
       ),
     );
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
