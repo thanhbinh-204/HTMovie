@@ -1,3 +1,6 @@
+import 'package:ht_movie/call_api/models/genre_model.dart';
+import 'cast_model.dart';
+
 class MovieModel {
   final String id;
   final String title;
@@ -9,6 +12,8 @@ class MovieModel {
   final bool isAdult;
   final double popularity;
   final String status;
+  final List<CastModel> cast;
+  final List<GenreModel> genres;
 
   MovieModel({
     required this.id,
@@ -21,6 +26,8 @@ class MovieModel {
     required this.isAdult,
     required this.popularity,
     required this.status,
+    required this.cast,
+    required this.genres,
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +42,12 @@ class MovieModel {
       isAdult: json['isAdult'] ?? false,
       popularity: (json['popularity'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] ?? '',
+      cast: (json['movieCasts'] as List<dynamic>? ?? [])
+              .map((e) => CastModel.fromJson(e['cast'] as Map<String, dynamic>))
+              .toList(),
+      genres: (json['movieGenres'] as List<dynamic>? ?? [])
+              .map((e) => GenreModel.fromJson(e['genre'] as Map<String, dynamic>))
+              .toList(),
     );
   }
 }

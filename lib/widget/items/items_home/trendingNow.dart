@@ -1,43 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../call_api/models/movie_model.dart';
 import '../../../call_api/services/movie_service.dart';
+import '../../../page/home/details_page.dart';
 
 class Trendingnow extends StatelessWidget {
   const Trendingnow({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // film
-    // final List<Map<String, dynamic>> film = [
-    //   {
-    //     'name': 'Avatar:The Way of Water',
-    //     'image':
-    //         'https://i.pinimg.com/736x/fe/75/db/fe75dbce2802cbdc52ed568c9d845ab8.jpg',
-    //     'rate': '4,5',
-    //     'year': '2022',
-    //   },
-    //   {
-    //     'name': 'Arrival',
-    //     'image':
-    //         'https://i.pinimg.com/736x/a8/a7/64/a8a7647887be44a8bedef093cd92f271.jpg',
-    //     'rate': '4,8',
-    //     'year': '2021',
-    //   },
-    //   {
-    //     'name': 'The Wave',
-    //     'image':
-    //         'https://i.pinimg.com/736x/64/59/81/645981a04bd9f5d661ce7c540c6eef64.jpg',
-    //     'rate': '4,1',
-    //     'year': 'The Wave',
-    //   },
-    //   {
-    //     'name': 'Train To BuSan',
-    //     'image':
-    //         'https://i.pinimg.com/736x/94/7d/5d/947d5d686167747afbab5a78b9fe68b9.jpg',
-    //     'rate': '4,9',
-    //     'year': '2014',
-    //   },
-    // ];
     final size = MediaQuery.of(context).size;
     final isTablet = size.width >= 600;
     final isSmallPhone = size.height < 700;
@@ -45,12 +15,10 @@ class Trendingnow extends StatelessWidget {
     return SizedBox(
       height: isSmallPhone ? 180 : (isTablet ? 290 : 260),
       child: FutureBuilder<List<MovieModel>>(
-        future: MovieService.getAllMovies(), 
+        future: MovieService.getAllMovies(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             return Center(
@@ -79,41 +47,41 @@ class Trendingnow extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         child: InkWell(
                           onTap: () {
-                            print("nhấn film qua details");
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(builder: (_) => DetailsPage(movieId: movie.id,)),
+                            );
                           },
-                          child: Image.network(movie.posterUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          errorBuilder: (_, _, __) => 
-                          const Icon(Icons.broken_image),
+                          child: Image.network(
+                            movie.posterUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder:
+                                (_, _, __) => const Icon(Icons.broken_image),
                           ),
                         ),
                       ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      movie.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
                       ),
-                      SizedBox(height: 6,),
-                      Text(
-                        movie.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        movie.releaseDate.split('-').first,
-                        style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                        ),
-                      )
+                    ),
+                    Text(
+                      movie.releaseDate.split('-').first,
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
                   ],
                 ),
-              ); 
-            }
-            );
-        }
-        )
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

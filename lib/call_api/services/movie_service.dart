@@ -38,4 +38,16 @@ class MovieService {
       throw Exception("Search movie failed");
     }
   }
+
+  //get movie by id (details)
+  static Future<MovieModel> getMovieDetail(String id) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/movies/$id/detail"),
+    );
+    if (response.statusCode == 200) {
+      return MovieModel.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load movie detail');
+    }
+  }
 }
