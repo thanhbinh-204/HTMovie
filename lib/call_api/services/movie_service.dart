@@ -13,7 +13,7 @@ class MovieService {
     if (reponse.statusCode == 200) {
       final Map<String, dynamic> json = jsonDecode(reponse.body);
 
-      final List list = json['results']['results'];
+      final List list = json['data']['records'];
 
       return list.map((e) => MovieModel.fromJson(e)).toList();
     } else {
@@ -31,9 +31,9 @@ class MovieService {
     if (response.statusCode == 200) {
       final Map<String, dynamic> json = jsonDecode(response.body);
 
-      final List list = json['results'];
+      final List list = json['data']['results'];
 
-      return list.map((e) => MovieModel.fromJson(e['movies'])).toList();
+      return list.map((e) => MovieModel.fromJson(e)).toList();
     } else {
       throw Exception("Search movie failed");
     }
@@ -41,11 +41,10 @@ class MovieService {
 
   //get movie by id (details)
   static Future<MovieModel> getMovieDetail(String id) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/movies/$id/detail"),
-    );
+    final response = await http.get(Uri.parse("$baseUrl/movies/$id/detail"));
     if (response.statusCode == 200) {
-      return MovieModel.fromJson(jsonDecode(response.body));
+      final json = jsonDecode(response.body);
+      return MovieModel.fromJson(json['data']);
     } else {
       throw Exception('Failed to load movie detail');
     }
