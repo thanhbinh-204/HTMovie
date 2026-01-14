@@ -20,7 +20,9 @@ class AuthService {
     );
 
     if (reponse.statusCode == 200 || reponse.statusCode == 201) {
+      final responseJson = jsonDecode(reponse.body);
       print("Register Success: ${reponse.body}");
+      final userJson = responseJson['data'];
     } else {
       print("Register failed: ${reponse.body}");
       throw Exception("Register failed");
@@ -41,14 +43,17 @@ class AuthService {
     );
 
     if (reponse.statusCode == 200) {
-      final data = jsonDecode(reponse.body);
+      final responseJson = jsonDecode(reponse.body);
+
+      final data = responseJson['data'];
+      final userJson = data['user'];
 
       // save token nhớ đăng nhập
       await Authstorage.saveLoginData(
         accessToken: data['accessToken'],
         refreshToken: data['refreshToken'],
-        userId: data['user']['id'],
-        email: data['user']['email'],
+        userId: userJson['id'],
+        email: userJson['email'],
       );
 
       debugPrint('LOGIN SUCCESS + TOKEN SAVED');

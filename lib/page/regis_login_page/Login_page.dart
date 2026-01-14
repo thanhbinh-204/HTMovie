@@ -130,18 +130,26 @@ class _LoginPage extends State<LoginPage> {
                                 setState(() => _isLoading = true);
 
                                 try {
-                                  final reponse = await AuthService.login(
-                                    email: _emailLoginVLD.text.trim(), 
+                                  await AuthService.login(
+                                    email: _emailLoginVLD.text.trim(),
                                     password: _passwordLoginVLD.text,
-                                    );
-                                    print("Login Success");
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text("Login Success")),
-                                    );
-                                    Navigator.pushReplacement(context, 
+                                  );
+
+                                  if (!mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Login Success"),
+                                    ),
+                                  );
+
+                                  Navigator.pushReplacement(
+                                    context,
                                     MaterialPageRoute(builder: (_) => Navbar()),
-                                    );
+                                  );
                                 } catch (e) {
+                                  if (!mounted) return;
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
@@ -150,7 +158,9 @@ class _LoginPage extends State<LoginPage> {
                                     ),
                                   );
                                 } finally {
-                                  setState(() => _isLoading = false);
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
                                 }
                               }
                             },
