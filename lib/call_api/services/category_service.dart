@@ -8,7 +8,7 @@ class CategoryService {
 
   Future <List<CategoryModel>> getCategories() async {
     final response = await _apiClient.get(ApiEndpoints.categories);
-    final List list = response['genres'];
+    final List list = response['data'];
 
     return list.map((e) => CategoryModel.fromJson(e)).toList();
   }
