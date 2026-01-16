@@ -2,16 +2,14 @@ import '../api/api_endpoints.dart';
 import '../api/api_client.dart';
 import '../models/category_model.dart';
 
-
 class CategoryService {
   final ApiClient _apiClient = ApiClient();
 
-  Future <List<CategoryModel>> getCategories() async {
+  Future<List<CategoryModel>> getCategories() async {
     final response = await _apiClient.get(ApiEndpoints.categories);
-    final List list = response['data'];
+
+    final List list = response['data']['records'];
 
     return list.map((e) => CategoryModel.fromJson(e)).toList();
   }
 }
-
-

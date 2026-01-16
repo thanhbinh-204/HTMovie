@@ -13,7 +13,8 @@ class TrailerService {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
 
-      final List list = json['data']['trailers'] ?? [];
+      final List list = json['data'];
+
       return list.map((e) => TrailerModel.fromJson(e)).toList();
     } else {
       throw Exception('Failed to load trailers');

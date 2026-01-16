@@ -26,7 +26,7 @@ class RatingSummaryItem extends StatelessWidget {
             : 42;
     final double starSize = isTablet ? 24 : 20;
     final double progressHeight = isTablet ? 10 : 8;
-
+    final displayAverage = average / 2;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -41,7 +41,7 @@ class RatingSummaryItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                average.toStringAsFixed(1),
+                displayAverage.toStringAsFixed(1),
                 style: TextStyle(
                   fontSize: averageFontSize,
                   fontWeight: FontWeight.bold,

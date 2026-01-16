@@ -24,14 +24,14 @@ class MovieService {
   //search by title
   static Future<List<MovieModel>> searchMovieByTitle(String title) async {
     final encodedTitle = Uri.encodeQueryComponent(title);
-    final url = Uri.parse("$baseUrl/keywords/movies/$encodedTitle");
+    final url = Uri.parse("$baseUrl/movies/search?q=$encodedTitle");
 
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> json = jsonDecode(response.body);
 
-      final List list = json['data']['results'];
+      final List list = json['data']['records'];
 
       return list.map((e) => MovieModel.fromJson(e)).toList();
     } else {

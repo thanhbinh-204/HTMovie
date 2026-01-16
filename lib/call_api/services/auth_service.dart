@@ -31,36 +31,36 @@ class AuthService {
 
   // auth login
   static Future<void> login({
-    required String email,
-    required String password,
-  }) async {
-    final url = Uri.parse("$baseUrl/auth/login");
+  required String email,
+  required String password,
+}) async {
+  final url = Uri.parse("$baseUrl/auth/login");
 
-    final reponse = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"email": email, "password": password}),
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "email": email,
+      "password": password,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    final responseJson = jsonDecode(response.body);
+    final data = responseJson['data'];
+    final userJson = data['user'];
+
+    await Authstorage.saveLoginData(
+      accessToken: data['accessToken'],
+      refreshToken: data['refreshToken'],
+      email: userJson['email'],
     );
 
-    if (reponse.statusCode == 200) {
-      final responseJson = jsonDecode(reponse.body);
-
-      final data = responseJson['data'];
-      final userJson = data['user'];
-
-      // save token nhớ đăng nhập
-      await Authstorage.saveLoginData(
-        accessToken: data['accessToken'],
-        refreshToken: data['refreshToken'],
-        userId: userJson['id'],
-        email: userJson['email'],
-      );
-
-      debugPrint('LOGIN SUCCESS + TOKEN SAVED');
-    } else {
-      throw Exception(reponse.body);
-    }
+    debugPrint('LOGIN SUCCESS');
+  } else {
+    throw Exception(response.body);
   }
+}
 
   // reset password
   static Future<void> resetPassword({

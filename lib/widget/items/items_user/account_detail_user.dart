@@ -36,10 +36,8 @@ class _AccountDetailUserState extends State<AccountDetailUser> {
         user = result;
         isLoading = false;
       });
-
     } on UnauthenticatedException {
       handleUnauthenticated();
-
     } catch (e) {
       debugPrint('FETCH USER ERROR: $e');
       if (!mounted) return;
@@ -74,8 +72,9 @@ class _AccountDetailUserState extends State<AccountDetailUser> {
       );
     }
 
-    final username = user!.email;
-    final memberSince = '${user!.createdAt.month}/${user!.createdAt.year}';
+    final username = user!.name ?? user!.email;
+    final memberSince =
+        '${user!.createdAt.day}/${user!.createdAt.month}/${user!.createdAt.year}';
     final plan = 'Free';
 
     return Container(
