@@ -18,8 +18,9 @@ class WatchHistoryService {
 
     final data = jsonDecode(response.body);
 
-    if (response.statusCode == 200 && data['success'] == true) {
-      return (data['history'] as List)
+    if (response.statusCode == 200 && data['status'] == 'success') {
+      final List list = data['data']['history'] ?? [];
+      return list 
           .map((e) => WatchHistoryModel.fromJson(e))
           .toList();
     }

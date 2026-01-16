@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:ht_movie/call_api/models/cast_model.dart';
 import 'package:ht_movie/call_api/models/trailer_model.dart';
+import 'package:ht_movie/call_api/services/auth_service.dart';
+import 'package:ht_movie/call_api/services/cast_service.dart';
 import 'package:ht_movie/call_api/services/movie_service.dart';
+import 'package:ht_movie/call_api/services/rating_service.dart';
 import 'package:ht_movie/call_api/services/trailer_service.dart';
-import 'package:ht_movie/widget/items/items_home/trailer_player_page.dart';
+import 'package:ht_movie/widget/items/item_rating/rating_bar_item.dart';
+import 'package:ht_movie/widget/items/items_detail.dart/castSection.dart';
 import 'package:readmore/readmore.dart';
 import '../../call_api/models/movie_model.dart';
+import '../../widget/items/items_detail.dart/trailerSection.dart';
+import '../../widget/items/item_rating/rating_summary_item.dart';
 
 class DetailsPage extends StatefulWidget {
   final String movieId;
@@ -15,17 +21,45 @@ class DetailsPage extends StatefulWidget {
 }
 
 class _DetailsState extends State<DetailsPage> {
+  // khai báo cast and trailer
   List<TrailerModel> trailers = [];
+  List<CastModel> casts = [];
   bool isTrailerLoading = true;
+  bool isCastLoading = true;
   MovieModel? movieDetail;
   bool isLoading = true;
   String? error;
+
+  //khai báo token
+  String token = '';
+
+  // khai báo rating
+  double average = 0.0;
+  int totalReviews = 0;
+  Map<int, int> countByStar = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
 
   @override
   void initState() {
     super.initState();
     fetchMovieDetail();
     fetchTrailers();
+    fetchCasts();
+    loadToken();
+    fetchRatings();
+  }
+
+  Future<void> fetchCasts() async {
+    try {
+      final result = await CastService.getCastsByMovieId(widget.movieId);
+      setState(() {
+        casts = result;
+        isCastLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isCastLoading = false;
+      });
+    }
   }
 
   Future<void> fetchMovieDetail() async {
@@ -54,6 +88,67 @@ class _DetailsState extends State<DetailsPage> {
       setState(() {
         isTrailerLoading = false;
       });
+    }
+  }
+
+  Future<void> submitRating(int score) async {
+    if (token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please login to rate this movie')),
+      );
+      return;
+    }
+    try {
+      final rating = await RatingService.rateMovie(
+        token: token,
+        movieId: widget.movieId,
+        score: score,
+      );
+      setState(() {
+        average = (rating['newAverage'] as num).toDouble();
+        totalReviews = rating['totalVotes'] as int;
+
+        final star = (score / 2).round();
+        countByStar[star] = (countByStar[star] ?? 0) + 1;
+      });
+    } catch (e) {
+      debugPrint('submit rating error: $e');
+    }
+  }
+
+  Future<void> loadToken() async {
+    final accessToken = await AuthService.getAccessToken();
+    if (accessToken != null) {
+      setState(() {
+        token = accessToken;
+      });
+    }
+  }
+
+  Future<void> fetchRatings() async {
+    try {
+      final ratings = await RatingService.getRatingsByMovieId(widget.movieId);
+
+      if (ratings.isEmpty) return;
+
+      // reset thanh progress
+      Map<int, int> starCount = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+      for (final r in ratings) {
+        final score = r['score']; // 1–10
+        final star = (score / 2).round().clamp(1, 5);
+        starCount[star] = (starCount[star] ?? 0) + 1;
+      }
+
+      final movie = ratings.first['movie'];
+
+      setState(() {
+        average = (movie['voteAverage'] as num).toDouble();
+        totalReviews = movie['voteCount'];
+        countByStar = starCount;
+      });
+    } catch (e) {
+      debugPrint('fetchRatings error: $e');
     }
   }
 
@@ -159,7 +254,7 @@ class _DetailsState extends State<DetailsPage> {
                     Row(
                       children: [
                         Text(
-                          "Top Cast",
+                          "Cast",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -178,7 +273,7 @@ class _DetailsState extends State<DetailsPage> {
                       ],
                     ),
                     SizedBox(height: 15),
-                    _castSetion(context, movie.cast),
+                    CastSection(casts: casts),
                     SizedBox(height: 25),
                     Row(
                       children: [
@@ -193,7 +288,30 @@ class _DetailsState extends State<DetailsPage> {
                       ],
                     ),
                     SizedBox(height: 20),
-                    _trailerSection(context),
+                    TrailerSection(
+                      isTrailerLoading: isTrailerLoading,
+                      trailers: trailers,
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Text(
+                          "Ratings & Reviews",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    RatingSummaryItem(
+                      average: average,
+                      totalReviews: totalReviews,
+                      countByStar: countByStar,
+                    ),
+                    RatingBarItem(onRate: submitRating),
                     const SizedBox(height: 60),
                   ],
                 ),
@@ -350,170 +468,6 @@ class _DetailsState extends State<DetailsPage> {
           border: Border.all(color: Colors.white24),
         ),
         child: Icon(icon, color: Colors.white),
-      ),
-    );
-  }
-
-  //item cast api
-  Widget _castSetion(BuildContext context, List<CastModel> casts) {
-    final size = MediaQuery.of(context).size;
-    final bool isTablet = size.width >= 600;
-    final bool isSmallPhone = size.height < 700;
-    final double avatarWidth =
-        isTablet
-            ? 90
-            : isSmallPhone
-            ? 60
-            : 70;
-    final double avatarHeight =
-        isTablet
-            ? 120
-            : isSmallPhone
-            ? 80
-            : 90;
-    final double textWidth =
-        isTablet
-            ? 110
-            : isSmallPhone
-            ? 80
-            : 90;
-    final double fontSize =
-        isTablet
-            ? 14
-            : isSmallPhone
-            ? 11
-            : 12;
-    return SizedBox(
-      height: 140,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: casts.length,
-        separatorBuilder: (_, __) => SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final cast = casts[index];
-          return Column(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child:
-                    cast.profileUrl == null || cast.profileUrl!.isEmpty
-                        ? Container(
-                          width: avatarWidth,
-                          height: avatarHeight,
-                          color: Colors.grey.shade800,
-                          child: const Icon(
-                            Icons.person,
-                            color: Colors.white54,
-                          ),
-                        )
-                        : Image.network(
-                          cast.profileUrl!,
-                          width: avatarWidth,
-                          height: avatarHeight,
-                          fit: BoxFit.cover,
-                        ),
-              ),
-              SizedBox(height: 8),
-              SizedBox(
-                width: textWidth,
-                child: Text(
-                  cast.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.white70, fontSize: fontSize),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  //widget hiển thị trailer
-  Widget _trailerSection(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final bool isTablet = size.width >= 600;
-    final bool isSmallPhone = size.height < 700;
-
-    final double trailerHeight =
-        isTablet
-            ? 220
-            : isSmallPhone
-            ? 150
-            : 180;
-    final double trailerWidth =
-        isTablet
-            ? 380
-            : isSmallPhone
-            ? 260
-            : 300;
-    final double textFontSize =
-        isTablet
-            ? 14
-            : isSmallPhone
-            ? 12
-            : 13;
-
-    if (isTrailerLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (trailers.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(
-          child: Text(
-            "Chưa có trailer ",
-            style: TextStyle(color: Colors.white70, fontSize: 16),
-          ),
-        ),
-      );
-    }
-
-    final trailer = trailers.first;
-
-    return Center(
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (_) => TrailerPlayerPage(
-                    youtubeUrl: trailer.youtubeUrl,
-                    title: trailer.title,
-                  ),
-            ),
-          );
-        },
-        child: Container(
-          width: trailerWidth,
-          height: trailerHeight,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
-            image:
-                trailer.thumbnail != null
-                    ? DecorationImage(
-                      image: NetworkImage(trailer.thumbnail!),
-                      fit: BoxFit.cover,
-                    )
-                    : null,
-          ),
-          child: Stack(
-            children: [
-              const Center(
-                child: Icon(
-                  Icons.play_circle_fill,
-                  size: 64,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

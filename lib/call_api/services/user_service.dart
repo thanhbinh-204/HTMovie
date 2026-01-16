@@ -10,8 +10,8 @@ class UserService {
       requireAuth: true,
     );
 
-    if (data['user'] != null) {
-      return UserModel.fromJson(data['user']);
+    if (data['data'] != null && data['data']['user'] != null) {
+      return UserModel.fromJson(data['data']['user']);
     }
 
     throw Exception('User data not found');
