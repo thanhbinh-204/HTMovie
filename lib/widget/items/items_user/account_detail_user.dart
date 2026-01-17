@@ -73,8 +73,10 @@ class _AccountDetailUserState extends State<AccountDetailUser> {
     }
 
     final username = user!.name ?? user!.email;
-    final memberSince =
-        '${user!.createdAt.day}/${user!.createdAt.month}/${user!.createdAt.year}';
+    final memberSince = user?.createdAt != null
+    ? '${user!.createdAt!.day}/${user!.createdAt!.month}/${user!.createdAt!.year}'
+    : 'Chưa cập nhật';
+
     final plan = 'Free';
 
     return Container(

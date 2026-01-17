@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ht_movie/call_api/models/user_model.dart';
 import 'package:http/http.dart' as http;
 import 'authstorage.dart';
 
@@ -54,12 +55,21 @@ class AuthService {
       accessToken: data['accessToken'],
       refreshToken: data['refreshToken'],
       email: userJson['email'],
+      avatarUrl: userJson['avatarUrl'],
     );
+    await Authstorage.saveCurrentUser(userJson);
 
     debugPrint('LOGIN SUCCESS');
   } else {
     throw Exception(response.body);
   }
+}
+
+  // get current user
+  static Future<UserModel?> getCurrentUser() async {
+  final userJson = await Authstorage.getCurrentUserRaw();
+  if (userJson == null) return null;
+  return UserModel.fromJson(userJson);
 }
 
   // reset password

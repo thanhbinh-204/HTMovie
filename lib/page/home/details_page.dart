@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:ht_movie/call_api/models/cast_model.dart';
+import 'package:ht_movie/call_api/models/comment_model.dart';
 import 'package:ht_movie/call_api/models/trailer_model.dart';
 import 'package:ht_movie/call_api/services/auth_service.dart';
 import 'package:ht_movie/call_api/services/cast_service.dart';
+import 'package:ht_movie/call_api/services/comment_service.dart';
 import 'package:ht_movie/call_api/services/movie_service.dart';
 import 'package:ht_movie/call_api/services/rating_service.dart';
 import 'package:ht_movie/call_api/services/trailer_service.dart';
+import 'package:ht_movie/call_api/services/authstorage.dart';
+import 'package:ht_movie/widget/items/item_comment/addComment.dart';
 import 'package:ht_movie/widget/items/item_rating/rating_bar_item.dart';
 import 'package:ht_movie/widget/items/items_detail.dart/castSection.dart';
 import 'package:readmore/readmore.dart';
 import '../../call_api/models/movie_model.dart';
 import '../../widget/items/items_detail.dart/trailerSection.dart';
 import '../../widget/items/item_rating/rating_summary_item.dart';
+import '../../widget/items/item_comment/comment_list.dart';
 
 class DetailsPage extends StatefulWidget {
   final String movieId;
@@ -25,12 +30,19 @@ class _DetailsState extends State<DetailsPage> {
   List<TrailerModel> trailers = [];
   List<CastModel> casts = [];
   bool isTrailerLoading = true;
-  bool isCastLoading = true;
   MovieModel? movieDetail;
   bool isLoading = true;
   String? error;
 
-  //khai báo token
+  // khai báo comment
+  // khai báo controller của add comment
+  final TextEditingController _commentController = TextEditingController();
+  String? _userAvatar;
+  List<CommentModel> comments = [];
+  bool _isSending = false;
+  bool isCommentLoading = true;
+
+  // khai báo token
   String token = '';
 
   // khai báo rating
@@ -46,6 +58,14 @@ class _DetailsState extends State<DetailsPage> {
     fetchCasts();
     loadToken();
     fetchRatings();
+    _loadComments();
+    _loadUserAvatar();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchCasts() async {
@@ -53,12 +73,9 @@ class _DetailsState extends State<DetailsPage> {
       final result = await CastService.getCastsByMovieId(widget.movieId);
       setState(() {
         casts = result;
-        isCastLoading = false;
       });
     } catch (e) {
-      setState(() {
-        isCastLoading = false;
-      });
+      debugPrint('fetchCasts error: $e');
     }
   }
 
@@ -149,6 +166,67 @@ class _DetailsState extends State<DetailsPage> {
       });
     } catch (e) {
       debugPrint('fetchRatings error: $e');
+    }
+  }
+
+  Future<void> _loadUserAvatar() async {
+    String? avatar = await Authstorage.getAvatar();
+    setState(() {
+      _userAvatar = avatar;
+    });
+  }
+
+  Future<void> _handleSendComment() async {
+    if (_isSending) return; // Nếu đang gửi thì không cho bấm tiếp
+
+    final content = _commentController.text.trim();
+    if (content.isEmpty) return;
+
+    setState(() => _isSending = true); // Bắt đầu gửi
+
+    try {
+      final token = await AuthService.getAccessToken();
+      if (token == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Please login to comment')));
+        return;
+      }
+
+      final newComment = await CommentService.createComment(
+        movieId: widget.movieId,
+        content: content,
+      );
+
+      _commentController.clear();
+      FocusScope.of(context).unfocus(); // Ẩn bàn phím
+
+      setState(() {
+        comments.insert(0, newComment); // Chèn comment mới lên đầu
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Comment posted!')));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    } finally {
+      setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _loadComments() async {
+    try {
+      final data = await CommentService.getComments(widget.movieId);
+      setState(() {
+        comments = data;
+        isCommentLoading = false;
+      });
+    } catch (e) {
+      setState(() => isCommentLoading = false);
+      print("Error loading comments: $e");
     }
   }
 
@@ -312,6 +390,37 @@ class _DetailsState extends State<DetailsPage> {
                       countByStar: countByStar,
                     ),
                     RatingBarItem(onRate: submitRating),
+                    SizedBox(height: 25),
+                    // add comment
+                    if (token.isNotEmpty)
+                      Addcomment(
+                        controller: _commentController,
+                        avatarUrl: _userAvatar,
+                        isSending: _isSending,
+                        onSend: _handleSendComment,
+                      )
+                    else
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'Please login to comment',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      ),
+
+                    // hiển thị comment
+                    // Thay cho FutureBuilder cũ:
+                    if (isCommentLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (comments.isEmpty)
+                      const Center(
+                        child: Text(
+                          'Chưa có comment nào',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      )
+                    else
+                      CommentList(comments: comments),
                     const SizedBox(height: 60),
                   ],
                 ),
