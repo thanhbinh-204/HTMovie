@@ -42,6 +42,13 @@ class _DetailsState extends State<DetailsPage> {
   bool _isSending = false;
   bool isCommentLoading = true;
 
+  // khai báo reply comment
+  String? _replyToCommentId;
+  String? _replyToUserName;
+
+  // khai báo show all comment
+  bool _showAllComments = false;
+
   // khai báo token
   String token = '';
 
@@ -60,6 +67,7 @@ class _DetailsState extends State<DetailsPage> {
     fetchRatings();
     _loadComments();
     _loadUserAvatar();
+    _fetchComments();
   }
 
   @override
@@ -169,6 +177,24 @@ class _DetailsState extends State<DetailsPage> {
     }
   }
 
+  Future<void> _fetchComments() async {
+    setState(() => isCommentLoading = true);
+
+    try {
+      final data = await CommentService.getComments(widget.movieId);
+
+      setState(() {
+        comments = data;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Load comment failed')));
+    } finally {
+      setState(() => isCommentLoading = false);
+    }
+  }
+
   Future<void> _loadUserAvatar() async {
     String? avatar = await Authstorage.getAvatar();
     setState(() {
@@ -177,12 +203,12 @@ class _DetailsState extends State<DetailsPage> {
   }
 
   Future<void> _handleSendComment() async {
-    if (_isSending) return; // Nếu đang gửi thì không cho bấm tiếp
+    if (_isSending) return; // đang gửi thì không cho bấm tiếp
 
     final content = _commentController.text.trim();
     if (content.isEmpty) return;
 
-    setState(() => _isSending = true); // Bắt đầu gửi
+    setState(() => _isSending = true); // gửi
 
     try {
       final token = await AuthService.getAccessToken();
@@ -196,14 +222,14 @@ class _DetailsState extends State<DetailsPage> {
       final newComment = await CommentService.createComment(
         movieId: widget.movieId,
         content: content,
+        parentId: _replyToCommentId,
       );
 
       _commentController.clear();
       FocusScope.of(context).unfocus(); // Ẩn bàn phím
 
-      setState(() {
-        comments.insert(0, newComment); // Chèn comment mới lên đầu
-      });
+      _replyToCommentId = null;
+      await _fetchComments();
 
       ScaffoldMessenger.of(
         context,
@@ -409,7 +435,6 @@ class _DetailsState extends State<DetailsPage> {
                       ),
 
                     // hiển thị comment
-                    // Thay cho FutureBuilder cũ:
                     if (isCommentLoading)
                       const Center(child: CircularProgressIndicator())
                     else if (comments.isEmpty)
@@ -420,7 +445,45 @@ class _DetailsState extends State<DetailsPage> {
                         ),
                       )
                     else
-                      CommentList(comments: comments),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CommentList(
+                            comments:
+                                _showAllComments || comments.length < 3
+                                    ? comments
+                                    : comments.take(3).toList(),
+                            onReply:
+                                (commentId, userName) => {
+                                  setState(() {
+                                    _replyToCommentId = commentId;
+                                  }),
+                                },
+                            replyToCommentId: _replyToCommentId,
+                            replyInput: Addcomment(
+                              onSend: _handleSendComment,
+                              controller: _commentController,
+                              avatarUrl: _userAvatar,
+                              isSending: _isSending,
+                            ),
+                          ),
+                          if (comments.length > 3)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _showAllComments = !_showAllComments;
+                                  });
+                                },
+                                child: Text(
+                                  _showAllComments ? 'Thu gọn' : 'Xem thêm',
+                                  style: TextStyle(color: Colors.deepPurple),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     const SizedBox(height: 60),
                   ],
                 ),

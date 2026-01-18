@@ -3,8 +3,17 @@ import '../../../call_api/models/comment_model.dart';
 
 class CommentList extends StatelessWidget {
   final List<CommentModel> comments;
+  final void Function(String commentId, String userName)? onReply;
+  final String? replyToCommentId;
+  final Widget replyInput;
 
-  const CommentList({super.key, required this.comments});
+  const CommentList({
+    super.key,
+    required this.comments,
+    this.onReply,
+    this.replyToCommentId,
+    required this.replyInput,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,17 +54,29 @@ class CommentList extends StatelessWidget {
           time: _timeAgo(comment.createdAt),
           isTablet: isTablet,
           isSmallPhone: isSmallPhone,
+          showReply: true,
+          onReply: () {
+            this.onReply?.call(comment.id, comment.user.name ?? 'User');
+          },
         ),
+
+        if (replyToCommentId == comment.id)
+        Padding(
+          padding: EdgeInsets.only(left: replyIndex),
+          child: replyInput,
+        ),
+
         ...comment.replies.map(
           (reply) => Padding(
             padding: EdgeInsets.only(left: replyIndex),
             child: _commentItem(
               name: reply.user.name ?? 'User',
-              avatarUrl: comment.user.avatarUrl,
+              avatarUrl: reply.user.avatarUrl,
               content: reply.content,
               time: _timeAgo(reply.createdAt),
               isTablet: isTablet,
               isSmallPhone: isSmallPhone,
+              showReply: false,
             ),
           ),
         ),
@@ -70,6 +91,8 @@ class CommentList extends StatelessWidget {
     required String? avatarUrl,
     required bool isTablet,
     required bool isSmallPhone,
+    bool showReply = false,
+    VoidCallback? onReply,
   }) {
     final avatarSize =
         isTablet
@@ -149,7 +172,7 @@ class CommentList extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 8,),
+                      SizedBox(width: 8),
                       Text(
                         time,
                         style: TextStyle(
@@ -168,7 +191,14 @@ class CommentList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text('Reply', style: TextStyle(color: Colors.white54)),
+                  if (showReply)
+                    GestureDetector(
+                      onTap: onReply,
+                      child: Text(
+                        'Reply',
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    ),
                 ],
               ),
             ),
